@@ -12,7 +12,7 @@ class CreateBaseModel(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @model_serializer
-    def set_model(self) -> dict[str, Any]:
+    def set_model(self) -> "dict[str, Any]":
         self_dict = dict(self)
 
         for key, value in self_dict.items():
