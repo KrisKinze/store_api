@@ -83,6 +83,17 @@ async def test_controller_patch_should_return_success(
     }
 
 
+async def test_controller_patch_should_return_not_found(client, products_url):
+    response = await client.patch(
+        f"{products_url}4fd7cd35-a3a0-4c1f-a78d-d24aa81e7dca", json={"price": "7.500"}
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {
+        "detail": "Product not found with filter: 4fd7cd35-a3a0-4c1f-a78d-d24aa81e7dca"
+    }
+
+
 async def test_controller_delete_should_return_no_content(
     client, products_url, product_inserted
 ):
@@ -100,3 +111,16 @@ async def test_controller_delete_should_return_not_found(client, products_url):
     assert response.json() == {
         "detail": "Product not found with filter: 4fd7cd35-a3a0-4c1f-a78d-d24aa81e7dca"
     }
+
+
+@pytest.mark.usefixtures("products_inserted")
+async def test_controller_query_with_price_filter_should_return_success(client, products_url):
+    response = await client.get(f"{products_url}?price_min=5000&price_max=8000")
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert isinstance(data, List)
+    # Should return products with price between (5000, 8000)
+    # Factory prices: 4.500, 5.500, 6.500, 10.500 -> expect 5.500 and 6.500 only
+    prices = sorted([item["price"] for item in data])
+    assert prices == ["5.500", "6.500"]

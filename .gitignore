@@ -127,6 +127,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.poetry/
+.venv/
+*tdd-project*
 
 # Spyder project settings
 .spyderproject

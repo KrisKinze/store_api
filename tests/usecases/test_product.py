@@ -46,6 +46,20 @@ async def test_usecases_update_should_return_success(product_up, product_inserte
     assert isinstance(result, ProductUpdateOut)
 
 
+async def test_usecases_update_should_return_not_found(product_up):
+    from uuid import UUID
+
+    with pytest.raises(NotFoundException) as err:
+        await product_usecase.update(
+            id=UUID("1e4f214e-85f7-461a-89d0-a751a32e3bb9"), body=product_up
+        )
+
+    assert (
+        err.value.message
+        == "Product not found with filter: 1e4f214e-85f7-461a-89d0-a751a32e3bb9"
+    )
+
+
 async def test_usecases_delete_should_return_success(product_inserted):
     result = await product_usecase.delete(id=product_inserted.id)
 
@@ -60,3 +74,12 @@ async def test_usecases_delete_should_not_found():
         err.value.message
         == "Product not found with filter: 1e4f214e-85f7-461a-89d0-a751a32e3bb9"
     )
+
+
+@pytest.mark.usefixtures("products_inserted")
+async def test_usecases_query_with_price_filter_should_return_success():
+    result = await product_usecase.query(price_min=5000, price_max=8000)
+
+    assert isinstance(result, List)
+    prices = sorted([str(item.price) for item in result])
+    assert prices == ["5.500", "6.500"]
